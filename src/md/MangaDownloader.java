@@ -36,29 +36,29 @@ public class MangaDownloader {
         this.handler = eh;
     }
 
-    public File tomeDownload(String tomeName, String[] urls ) throws IOException {
+    public File volumeDownload(String volumeName, String[] urls ) throws IOException {
         for (int i = 0; i < urls.length; i++) {
             String downloadedChapter = download(urls[i]);
             handler.event(EventsHandler.EventTypes.HighLevelEvent, String.format(STRINGS.getString("MSG_DOWNLOADEDCHAPTER"), downloadedChapter));
         }
-        return pack(tomeName);
+        return pack(volumeName);
     }
 
-    public File tomeDownload(String tomeName, List<MangaChaptersInfo> chapters ) throws IOException {
+    public File volumeDownload(String volumeName, List<MangaChaptersInfo> chapters ) throws IOException {
         List<String> urls = new ArrayList<String>();
         for( MangaChaptersInfo chapter : chapters) {
             urls.add(chapter.url);
         }
         String[] urlsArray = {};
         urlsArray = urls.toArray(urlsArray);
-        return tomeDownload(tomeName, urlsArray);
+        return volumeDownload(volumeName, urlsArray);
     }
 
     public File chapterDownload(String url) throws IOException {
         return pack(download(url));
     }
 
-    public static String automaticTomeName(List<MangaChaptersInfo> selectedChapters) {
+    public static String automaticVolumeName(List<MangaChaptersInfo> selectedChapters) {
         TreeSet<Integer> chapterNumbers = new TreeSet<Integer>();
         String alternative = "";
         for(MangaChaptersInfo m : selectedChapters) {

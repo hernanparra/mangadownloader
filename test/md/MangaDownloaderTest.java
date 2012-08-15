@@ -44,27 +44,27 @@ public class MangaDownloaderTest {
         System.out.println("automaticTomeName");
         List<MangaChaptersInfo> selectedChapters = new ArrayList<MangaChaptersInfo>();
         selectedChapters.add(new MangaChaptersInfo("","One Piece","2"));
-        assertEquals("0002", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0002", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","3"));
-        assertEquals("0002 - 0003", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0002 - 0003", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","1"));
-        assertEquals("0001 - 0003", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0001 - 0003", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","OMake"));
-        assertEquals("0001 - 0003 & OMake", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0001 - 0003 & OMake", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","Pilot"));
-        assertEquals("0001 - 0003 & Extras", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0001 - 0003 & Extras", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","0"));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","-1"));
-        assertEquals("-001 - 0003 & Extras", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("-001 - 0003 & Extras", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.clear();
         selectedChapters.add(new MangaChaptersInfo("","One Piece","Pilot"));
-        assertEquals("Pilot", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("Pilot", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","OMake"));
-        assertEquals("Extras", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("Extras", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","5"));
-        assertEquals("0005 & Extras", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0005 & Extras", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","6"));
-        assertEquals("0005 - 0006 & Extras", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0005 - 0006 & Extras", MangaDownloader.automaticVolumeName(selectedChapters));
     }
 
     @Test
@@ -76,10 +76,10 @@ public class MangaDownloaderTest {
         selectedChapters.add(new MangaChaptersInfo("","One Piece","3"));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","5"));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","6"));
-        assertEquals("0001 - 0003, 0005 - 0006", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("0001 - 0003, 0005 - 0006", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","-1"));
-        assertEquals("-001, 0001 - 0003, 0005 - 0006", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("-001, 0001 - 0003, 0005 - 0006", MangaDownloader.automaticVolumeName(selectedChapters));
         selectedChapters.add(new MangaChaptersInfo("","One Piece","Pilot"));
-        assertEquals("-001, 0001 - 0003, 0005 - 0006 & Pilot", MangaDownloader.automaticTomeName(selectedChapters));
+        assertEquals("-001, 0001 - 0003, 0005 - 0006 & Pilot", MangaDownloader.automaticVolumeName(selectedChapters));
     }
 }

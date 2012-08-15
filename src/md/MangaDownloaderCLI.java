@@ -49,7 +49,7 @@ public class MangaDownloaderCLI {
         File packedFile;
         if( args.length > 3) {
             String[] urls = Arrays.copyOfRange(args, 3, args.length);
-            packedFile = engine.tomeDownload(args[2], urls);
+            packedFile = engine.volumeDownload(args[2], urls);
         } else {
             //Doesn't needs chapter name.
             packedFile = engine.chapterDownload(args[2]);
