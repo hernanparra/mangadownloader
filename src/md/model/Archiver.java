@@ -8,7 +8,7 @@ import java.io.*;
  */
 public interface Archiver {
     void verifyPrerequisites();
-    File archive(String filename, File directory) throws FileNotFoundException, IOException;
+    File archive(String path, String filename, File directory) throws FileNotFoundException, IOException;
 
     String getArchiver();
     String getExtension();

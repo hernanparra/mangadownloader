@@ -31,8 +31,8 @@ public class RARArchiver implements Archiver {
         return extension;
     }
 
-    public File archive(String filename, File directory) throws FileNotFoundException, IOException {
-        String cbrPath = filename + extension;
+    public File archive(String path, String filename, File directory) throws FileNotFoundException, IOException {
+        String cbrPath = path + filename + extension;
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.command("rar.exe","a","-ep1","-inul","-r", cbrPath, directory.getAbsolutePath() + File.separator + "*");

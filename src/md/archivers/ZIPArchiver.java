@@ -33,8 +33,8 @@ public class ZIPArchiver implements Archiver {
         return extension;
     }
 
-    public File archive(String filename, File directory) throws FileNotFoundException, IOException {
-        File zipFile = new File(filename + extension);
+    public File archive(String path, String filename, File directory) throws FileNotFoundException, IOException {
+        File zipFile = new File(path + filename + extension);
         zipDirectory(zipFile, directory);
         return zipFile;
     }

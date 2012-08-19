@@ -31,6 +31,7 @@ public class MangaDownloader {
     private Archiver archiver;
     private EventsHandler handler;
     private File tempDirectory = null;
+    private String savePath = new File(".").getAbsolutePath();
 
     public MangaDownloader(SiteParser site, Archiver archiver, EventsHandler eh) {
         this.site = site;
@@ -136,7 +137,7 @@ public class MangaDownloader {
     private File pack(String filename) throws IOException {
         filename = makeValidFileName(filename);
         try {
-            return archiver.archive(filename, tempDirectory);
+            return archiver.archive(getSavePath(), filename, tempDirectory);
         } finally {
             if (tempDirectory != null) {
                 FileUtils.deleteDirectory(tempDirectory);
@@ -191,5 +192,16 @@ public class MangaDownloader {
     private String makeValidFileName(String mangaName) {
         mangaName = mangaName.replaceAll("(\\\\|/|\\*|\\?)*", "");
         return mangaName;
+    }
+
+    public void setSavePath(String saveTo) {
+        if(! saveTo.endsWith(File.separator)) {
+            saveTo = saveTo + File.separator;
+        }
+        this.savePath = saveTo;
+    }
+
+    public String getSavePath() {
+        return savePath;
     }
 }
