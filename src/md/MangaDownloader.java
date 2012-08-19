@@ -17,6 +17,8 @@ import org.apache.commons.io.*;
 //API Multichapter (tome) download & packing
 //API Inteligent Automatic tome naming
 //Reintento por falla download (hecho)
+//TODO API Soporte a parsers implementados en Groovy
+//TODO API Descubrimiento automático de parsers
 //TODO API Soporte a resume desde el archivo de pendings.txt
 //TODO API Soporte a resume comparando lo solicitado de lo que ya existe en el archivo.
 //TODO API Watchdog de nuevos capitulos
