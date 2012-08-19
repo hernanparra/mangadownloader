@@ -47,7 +47,7 @@ public class RARArchiverTest {
         File directory = new File("\\temp\\docs");
         RARArchiver instance = new RARArchiver(".cbr");
         File expResult = new File(filename + ".cbr");
-        File result = instance.archive(filename, directory);
+        File result = instance.archive(new File(".").getAbsolutePath(), filename, directory);
         assertEquals(expResult, result);
     }
 }
