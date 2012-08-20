@@ -1,10 +1,10 @@
 package md.parsers;
 
-import md.model.*;
 import java.io.*;
 import java.util.*;
 import md.documentfactorys.DocumentFactoryFromFile;
 import md.documentfactorys.DocumentFactoryFromURL;
+import md.model.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 
