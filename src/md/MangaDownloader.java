@@ -14,13 +14,14 @@ import org.apache.commons.io.*;
 //API Mangareader.net backups & ripping
 //API Support for zip, cbz, rar, cbr compression & packing
 //API Automatic chapter naming
-//API Multichapter (tome) download & packing
-//API Inteligent Automatic tome naming
-//Reintento por falla download (hecho)
+//API Multichapter (volume) download & packing
+//API Inteligent Automatic volume naming
+//API Retry on download timeout or errors
+//TODO API Resumir si existe el directorio de download
+//TODO API Resumir si existe el archivo el download de un capitulo - Descomprimir archivo y continuar como caso de arriba.
+//TODO API Soporte a resume desde el archivo de pendings.txt?
 //TODO API Soporte a parsers implementados en Groovy
 //TODO API Descubrimiento automático de parsers
-//TODO API Soporte a resume desde el archivo de pendings.txt
-//TODO API Soporte a resume comparando lo solicitado de lo que ya existe en el archivo.
 //TODO API Watchdog de nuevos capitulos
 public class MangaDownloader {
     private final static ResourceBundle STRINGS = java.util.ResourceBundle.getBundle("md/strings");
@@ -31,7 +32,7 @@ public class MangaDownloader {
     private Archiver archiver;
     private EventsHandler handler;
     private File tempDirectory = null;
-    private String savePath = new File(".").getAbsolutePath();
+    private String savePath = new File(".").getAbsolutePath() + File.separator;
 
     public MangaDownloader(SiteParser site, Archiver archiver, EventsHandler eh) {
         this.site = site;
@@ -61,6 +62,109 @@ public class MangaDownloader {
         return pack(download(url));
     }
 
+    private String download(String url) throws IOException {
+        MangaChapterInfo downloadInfo = site.retrieveMangaPagesList(url, handler);
+        handler.event(EventsHandler.EventTypes.HighLevelEvent, STRINGS.getString("MSG_GOTCHAPTERDOWNLOADLIST"));
+
+        String filename = String.format("%s %s", makeValidFileName(downloadInfo.mangaName), makeValidFileName(downloadInfo.chapterNumber));
+
+        if (tempDirectory == null) {
+            tempDirectory = createTempDirectory(filename);
+        }
+
+        downloadList(downloadInfo.images, filename, tempDirectory);
+        handler.event(EventsHandler.EventTypes.HighLevelEvent, String.format(STRINGS.getString("MSG_ARCHIVEDFILE"), filename));
+        return filename;
+    }
+
+    private File pack(String filename) throws IOException {
+        filename = makeValidFileName(filename);
+        try {
+            return archiver.archive(getSavePath(), filename, tempDirectory);
+        } finally {
+            if (tempDirectory != null) {
+                FileUtils.deleteDirectory(tempDirectory);
+            }
+        }
+    }
+
+    /**
+     * The urlList must be ordered for renumbering
+     *
+     * @param urlList List of ordered url to be downloaded and renamed
+     * @throws MalformedURLException
+     */
+    private File downloadList(List<MangaImageInfo> urlList, String namePrefix, File workDirectory) throws IOException {
+        String baseName = namePrefix + " - ";
+        File baseDirectory = new File(workDirectory, namePrefix);
+        boolean allDownloaded = true;
+
+        int counter = 1;
+        for (MangaImageInfo page : urlList) {
+            File outputFile = new File(baseDirectory, String.format("%s%04d%s", baseName,counter++,page.imgExtension));
+            if( outputFile.exists() && (outputFile.length() > 0) ) {
+                handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_ALREADYDOWNLOADEDFILE"), page.url));
+            } else {
+                try {
+                    FileUtils.copyURLToFile(new URL(page.url), outputFile, CONNECTION_TIMEOUT, READ_TIMEOUT);
+                } catch (IOException ioe) {
+                    outputFile.delete();
+                    handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_RETRYINGFILE"), page.url, ioe.getMessage()));
+                    try {
+                        FileUtils.copyURLToFile(new URL(page.url), outputFile, CONNECTION_TIMEOUT, READ_TIMEOUT);
+                    } catch(IOException ex) {
+                        handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_SKIPPINGFILE"), page.url, ex.getMessage()));
+                        allDownloaded = false;
+                        FileUtils.writeStringToFile(new File(baseDirectory, PENDINGS_FILE_NAME), page.url);
+                    }
+                }
+                handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_DOWNLOADEDFILE"), page.url));
+            }
+        }
+        return baseDirectory;
+    }
+
+    //HERNAN
+    private File createTempDirectory(String filename) throws IOException {
+        final File tempDir = new File(getSavePath() + "md." + filename);
+        if( ! tempDir.exists() ) {
+            if (!(tempDir.mkdir())) {
+                throw new IOException(String.format(STRINGS.getString("MSG_COULDNOTCREATETEMPORALDIRECTORY"), tempDir.getAbsolutePath()));
+            }
+        }
+        return tempDir;
+    }
+
+//    private File createTempDirectory() throws IOException {
+//        final File temp = File.createTempFile(STRINGS.getString("NAME_TEMP"), Long.toBinaryString(System.nanoTime()));
+//
+//        if (!(temp.delete())) {
+//            throw new IOException(String.format(STRINGS.getString("MSG_COULDNOTDELETETEMPORALFILE"), temp.getAbsolutePath()));
+//        }
+//
+//        if (!(temp.mkdir())) {
+//            throw new IOException(String.format(STRINGS.getString("MSG_COULDNOTCREATETEMPORALDIRECTORY"), temp.getAbsolutePath()));
+//        }
+//
+//        return temp;
+//    }
+
+    private String makeValidFileName(String mangaName) {
+        mangaName = mangaName.replaceAll("(\\\\|/|\\*|\\?)*", "");
+        return mangaName;
+    }
+
+    public void setSavePath(String saveTo) {
+        if(! saveTo.endsWith(File.separator)) {
+            saveTo = saveTo + File.separator;
+        }
+        this.savePath = saveTo;
+    }
+
+    public String getSavePath() {
+        return savePath;
+    }
+
     public static String automaticVolumeName(List<MangaChaptersInfo> selectedChapters) {
         TreeSet<Integer> chapterNumbers = new TreeSet<Integer>();
         String alternative = "";
@@ -76,7 +180,7 @@ public class MangaDownloader {
                     alternative = m.chapterNumber;
                 } else {
                     alternative = STRINGS.getString("NAME_EXTRAS");
-                }                
+                }
             }
         }
 
@@ -119,89 +223,4 @@ public class MangaDownloader {
         return result;
     }
 
-    private String download(String url) throws IOException {
-        MangaChapterInfo downloadInfo = site.retrieveMangaPagesList(url, handler);
-        handler.event(EventsHandler.EventTypes.HighLevelEvent, STRINGS.getString("MSG_GOTCHAPTERDOWNLOADLIST"));
-
-        String filename = String.format("%s %s", makeValidFileName(downloadInfo.mangaName), downloadInfo.chapterNumber);
-
-        if (tempDirectory == null) {
-            tempDirectory = createTempDirectory();
-        }
-
-        downloadList(downloadInfo.images, filename, tempDirectory);
-        handler.event(EventsHandler.EventTypes.HighLevelEvent, String.format(STRINGS.getString("MSG_ARCHIVEDFILE"), filename));
-        return filename;
-    }
-
-    private File pack(String filename) throws IOException {
-        filename = makeValidFileName(filename);
-        try {
-            return archiver.archive(getSavePath(), filename, tempDirectory);
-        } finally {
-            if (tempDirectory != null) {
-                FileUtils.deleteDirectory(tempDirectory);
-            }
-        }
-    }
-
-    /**
-     * The urlList must be ordered for renumbering
-     *
-     * @param urlList List of ordered url to be downloaded and renamed
-     * @throws MalformedURLException
-     */
-    private File downloadList(List<MangaImageInfo> urlList, String namePrefix, File workDirectory) throws IOException {
-        String baseName = namePrefix + " - ";
-        File baseDirectory = new File(workDirectory, namePrefix);
-
-        int counter = 1;
-        for (MangaImageInfo page : urlList) {
-            File outputFile = new File(baseDirectory, String.format("%s%04d%s", baseName,counter++,page.imgExtension));
-            try {
-                FileUtils.copyURLToFile(new URL(page.url), outputFile, CONNECTION_TIMEOUT, READ_TIMEOUT);
-            } catch (IOException ioe) {
-                outputFile.delete();
-                handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_RETRYINGFILE"), page.url, ioe.getMessage()));
-                try {
-                    FileUtils.copyURLToFile(new URL(page.url), outputFile, CONNECTION_TIMEOUT, READ_TIMEOUT);
-                } catch(IOException ex) {
-                    handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_SKIPPINGFILE"), page.url, ex.getMessage()));
-                    FileUtils.writeStringToFile(new File(baseDirectory, PENDINGS_FILE_NAME), page.url);
-                }
-            }
-            handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_DOWNLOADEDFILE"), page.url));
-        }
-        return baseDirectory;
-    }
-
-    private File createTempDirectory() throws IOException {
-        final File temp = File.createTempFile(STRINGS.getString("NAME_TEMP"), Long.toBinaryString(System.nanoTime()));
-
-        if (!(temp.delete())) {
-            throw new IOException(String.format(STRINGS.getString("MSG_COULDNOTDELETETEMPORALFILE"), temp.getAbsolutePath()));
-        }
-
-        if (!(temp.mkdir())) {
-            throw new IOException(String.format(STRINGS.getString("MSG_COULDNOTCREATETEMPORALDIRECTORY"), temp.getAbsolutePath()));
-        }
-
-        return temp;
-    }
-
-    private String makeValidFileName(String mangaName) {
-        mangaName = mangaName.replaceAll("(\\\\|/|\\*|\\?)*", "");
-        return mangaName;
-    }
-
-    public void setSavePath(String saveTo) {
-        if(! saveTo.endsWith(File.separator)) {
-            saveTo = saveTo + File.separator;
-        }
-        this.savePath = saveTo;
-    }
-
-    public String getSavePath() {
-        return savePath;
-    }
 }
