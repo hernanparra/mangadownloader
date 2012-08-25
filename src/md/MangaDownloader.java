@@ -17,10 +17,10 @@ import org.apache.commons.io.*;
 //API Multichapter (volume) download & packing
 //API Inteligent Automatic volume naming
 //API Retry on download timeout or errors
+//TODO API Soporte a parsers implementados en Groovy
 //TODO API Resumir si existe el directorio de download
 //TODO API Resumir si existe el archivo el download de un capitulo - Descomprimir archivo y continuar como caso de arriba.
 //TODO API Soporte a resume desde el archivo de pendings.txt?
-//TODO API Soporte a parsers implementados en Groovy
 //TODO API Descubrimiento automático de parsers
 //TODO API Watchdog de nuevos capitulos
 public class MangaDownloader {
@@ -94,7 +94,7 @@ public class MangaDownloader {
      * @param urlList List of ordered url to be downloaded and renamed
      * @throws MalformedURLException
      */
-    private File downloadList(List<MangaImageInfo> urlList, String namePrefix, File workDirectory) throws IOException {
+    private boolean downloadList(List<MangaImageInfo> urlList, String namePrefix, File workDirectory) throws IOException {
         String baseName = namePrefix + " - ";
         File baseDirectory = new File(workDirectory, namePrefix);
         boolean allDownloaded = true;
@@ -121,10 +121,9 @@ public class MangaDownloader {
                 handler.event(EventsHandler.EventTypes.LowLevelEvent, String.format(STRINGS.getString("MSG_DOWNLOADEDFILE"), page.url));
             }
         }
-        return baseDirectory;
+        return allDownloaded;
     }
 
-    //HERNAN
     private File createTempDirectory(String filename) throws IOException {
         final File tempDir = new File(getSavePath() + "md." + filename);
         if( ! tempDir.exists() ) {
