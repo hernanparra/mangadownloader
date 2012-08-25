@@ -1,9 +1,7 @@
 package md.parsers;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import md.documentfactorys.*;
 import md.model.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
@@ -13,27 +11,6 @@ import org.jsoup.select.Elements;
  * @author Hernan
  */
 public class MangareaderSiteParser extends AbstractSiteParser {
-    private static String DOMAIN = "http://www.mangareader.net";
-
-    public static List<SiteParser> createParsers(DocumentFactory factory) {
-        List<SiteParser> result = new ArrayList<SiteParser>();
-        result.add(new MangareaderSiteParser("Mangareader Alphabetical", DOMAIN + "/alphabetical", factory));
-        return result;
-    }
-
-    public static List<SiteParser> createParsers() {
-        return MangareaderSiteParser.createParsers(new DocumentFactoryFromURL());
-    }
-
-    public static List<SiteParser> createParsersForTest() {
-        String MANGAREADER_BASEDIR = "resources" + File.separator + "mangareader" + File.separator;
-
-        final DocumentFactoryFromFile factory = new DocumentFactoryFromFile();
-        factory.put("http://www.mangareader.net/alphabetical", MANGAREADER_BASEDIR + "alphabetical.htm", "UTF-8", null);
-        factory.put("http://www.mangareader.net/224/anima.html", MANGAREADER_BASEDIR + "anima.html", "UTF-8", null);
-        return MangareaderSiteParser.createParsers(factory);
-    }
-
     private String name;
     private String url;
 
@@ -57,7 +34,7 @@ public class MangareaderSiteParser extends AbstractSiteParser {
     }
 
     public String getBaseURL() {
-        return DOMAIN;
+        return MangareaderParserFactory.DOMAIN;
     }
 
     public List<MangaSeriesInfo> retrieveMangaList(String url, EventsHandler eh) throws IOException {
@@ -67,9 +44,9 @@ public class MangareaderSiteParser extends AbstractSiteParser {
         for (Element e : elements) {
             Element a = e.child(0);
             if (e.children().size() > 1) {
-                result.add(new MangaSeriesInfo(a.ownText(), DOMAIN + a.attr("href"), e.child(1).ownText()));
+                result.add(new MangaSeriesInfo(a.ownText(), MangareaderParserFactory.DOMAIN + a.attr("href"), e.child(1).ownText()));
             } else {
-                result.add(new MangaSeriesInfo(a.ownText(), DOMAIN + a.attr("href")));
+                result.add(new MangaSeriesInfo(a.ownText(), MangareaderParserFactory.DOMAIN + a.attr("href")));
             }
         }
         return result;
@@ -93,7 +70,7 @@ public class MangareaderSiteParser extends AbstractSiteParser {
             } else {
                 additionalData = "";
             }
-            result.add(new MangaChaptersInfo(DOMAIN + a.attr("href"), name, chapter, additionalData));
+            result.add(new MangaChaptersInfo(MangareaderParserFactory.DOMAIN + a.attr("href"), name, chapter, additionalData));
         }
         return result;
     }
@@ -123,7 +100,7 @@ public class MangareaderSiteParser extends AbstractSiteParser {
             String extension = imageURL.substring(imageURL.lastIndexOf("."));
             result.add(new MangaImageInfo(imageURL, extension));
             if( i != pages ) {
-                String nextURL = DOMAIN + doc.select("span.next > a").attr("href");
+                String nextURL = MangareaderParserFactory.DOMAIN + doc.select("span.next > a").attr("href");
                 doc = docBuilder.create(nextURL);
             }
         }

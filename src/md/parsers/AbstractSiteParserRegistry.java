@@ -11,9 +11,9 @@ import md.model.SiteParser;
  *
  * @author Hernan
  */
-public abstract class AbstractSiteParserFactory {
+public abstract class AbstractSiteParserRegistry {
 
-    public AbstractSiteParserFactory() {
+    public AbstractSiteParserRegistry() {
     }
 
     public Map<String, SiteParser> parsersMap() {
