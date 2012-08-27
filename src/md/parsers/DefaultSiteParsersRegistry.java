@@ -17,6 +17,7 @@ public class DefaultSiteParsersRegistry extends AbstractSiteParserRegistry {
             result.add(new NullSiteParser());
             result.addAll(new SubmangaParserFactory().createParsers());
             result.addAll(new MangareaderParserFactory().createParsers());
+            result.addAll(new GroovyScriptsParserFactory().createParsers());
             siteParsers = result;
         }
         return siteParsers;

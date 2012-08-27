@@ -12,7 +12,7 @@ import md.model.SiteParser;
  *
  * @author Hernan
  */
-public class SubmangaParserFactory {
+public class SubmangaParserFactory implements ParserFactory {
     public static String DOMAIN = "http://submanga.com";
 
     public List<SiteParser> createParsers(DocumentFactory factory) {
@@ -22,10 +22,12 @@ public class SubmangaParserFactory {
         return result;
     }
 
+    @Override
     public List<SiteParser> createParsers() {
         return createParsers(new DocumentFactoryFromURL());
     }
 
+    @Override
     public List<SiteParser> createParsersForTest() {
         String SUBMANGA_BASEDIR = "resources" + File.separator + "submanga" + File.separator;
         DocumentFactoryFromFile factory = new DocumentFactoryFromFile();

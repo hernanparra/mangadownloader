@@ -12,7 +12,7 @@ import md.model.SiteParser;
  *
  * @author Hernan
  */
-public class MangareaderParserFactory {
+public class MangareaderParserFactory implements ParserFactory {
     public static String DOMAIN = "http://www.mangareader.net";
 
     public List<SiteParser> createParsers(DocumentFactory factory) {

@@ -26,7 +26,7 @@ public class MangaDownloaderCLI {
             showUsage();
         }
 
-        SiteParser parser = new DefaultSiteParsersFactory().parsersMap().get(args[1]);
+        SiteParser parser = new DefaultSiteParsersRegistry().parsersMap().get(args[1]);
 
         EventsHandler eventHandler = new EventsHandler() {
             public void event(EventsHandler.EventTypes eventType , String value) {
@@ -73,7 +73,7 @@ public class MangaDownloaderCLI {
         }
 
         System.out.println("SITE is one of: ");
-        AbstractSiteParserFactory parsersFactory = new DefaultSiteParsersFactory();
+        AbstractSiteParserRegistry parsersFactory = new DefaultSiteParsersRegistry();
         Map<String, SiteParser> sitesMap = parsersFactory.parsersMap();
         for( String name : sitesMap.keySet()) {
             System.out.println(name);
