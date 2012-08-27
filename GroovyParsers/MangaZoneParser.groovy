@@ -1,5 +1,6 @@
 package md.parsers
 
+import groovy.transform.TypeChecked
 import md.model.*
 import org.jsoup.nodes.*
 import org.jsoup.select.*
@@ -8,6 +9,7 @@ import md.documentfactorys.DocumentFactoryFromURL
  *
  * @author Hernan
  */
+@TypeChecked
 class MangaZoneParser extends AbstractSiteParser {
     static def DOMAIN = "http://submanga.com";
     private def name;
@@ -48,12 +50,10 @@ class MangaZoneParser extends AbstractSiteParser {
     }
 
     public List<MangaSeriesInfo> retrieveMangaList(String url, EventsHandler eh) throws IOException {
-        Document doc = docBuilder.create(url);
-        Elements elements = doc.select("div#b table.caps td a[href]");
-        List<MangaSeriesInfo> result =  new ArrayList<MangaSeriesInfo>();
-        for(Element e : elements) {
-            result.add(new MangaSeriesInfo(e.ownText(), e.attr("href")));
-        }
+        def doc = docBuilder.create(url);
+        def elements = doc.select("div#b table.caps td a[href]");
+        def result =  new ArrayList<MangaSeriesInfo>();
+        elements.each { result.add(new MangaSeriesInfo(it.ownText(), it.attr("href"))) }
         return result;
     }
 
@@ -66,34 +66,32 @@ class MangaZoneParser extends AbstractSiteParser {
             url = url + "completa";
         }
 
-        Document doc = docBuilder.create(url);
-        Elements elements = doc.select("#b table.caps td.s a[href]:not([rel=nofollow])");
-        List<MangaChaptersInfo> result =  new ArrayList<MangaChaptersInfo>();
-        for(Element e : elements) {
-            result.add(new MangaChaptersInfo(e.attr("href"), e.ownText(), e.child(0).ownText()));
-        }
+        def doc = docBuilder.create(url);
+        def elements = doc.select("#b table.caps td.s a[href]:not([rel=nofollow])");
+        def result =  new ArrayList<MangaChaptersInfo>();
+        elements.each { e -> result.add(new MangaChaptersInfo(e.attr("href"), e.ownText(), e.child(0).ownText())) }
         return result;
     }
 
     public MangaChapterInfo retrieveMangaPagesList(String url, EventsHandler eh) throws IOException {
-        MangaChapterInfo result = new MangaChapterInfo();
+        def result = new MangaChapterInfo();
 
-        Document doc = findNeededDocument(url);
+        def doc = findNeededDocument(url);
 
-        Elements elements = doc.select("td.l > a");
+        def elements = doc.select("td.l > a");
         result.mangaName = elements.get(2).ownText();
         result.chapterNumber = elements.get(3).ownText();
 
-        int pages = calculatePageCount(doc);
-        String imgURL = findFirstImageURL(doc);
+        def pages = calculatePageCount(doc);
+        def imgURL = findFirstImageURL(doc);
 
         result.images = createList(imgURL, pages);
         return result;
     }
     
     private Document findNeededDocument(String url) throws IOException {
-        Document doc = docBuilder.create(url);
-        Element element = doc.getElementById("l");
+        def doc = docBuilder.create(url);
+        def element = doc.getElementById("l");
         if ((element != null) && (element.tagName().equals("a"))) {
             doc = docBuilder.create(element.attr("href"));
         }
@@ -101,35 +99,29 @@ class MangaZoneParser extends AbstractSiteParser {
     }
 
     private int calculatePageCount(Document source) {
-        Elements elementList = source.select("option");
-        int pages = elementList.size();
+        def elementList = source.select("option");
+        def pages = elementList.size();
         return pages;
     }
 
     private String findFirstImageURL(Document source) {
         //Encontrar los links a la página 2
         //El último de ellos contiene la imágen como primer elemento.
-        Elements elementList = source.select("body > div > a > img");
-        Element element = elementList.get(elementList.size() - 1);
-        String imgSource = element.attr("src");
-        return imgSource;
+        def elementList = source.select("body > div > a > img");
+        def element = elementList.get(elementList.size() - 1);
+        return element.attr("src");
     }
 
     private List<MangaImageInfo> createList(String firstURL, int pages) {
         //http://img3.submanga.com/pages/115/115356b57/1.jpg
 
-        int slashPos = firstURL.lastIndexOf("/");
-        String head = firstURL.substring(0, slashPos + 1);
+        def slashPos = firstURL.lastIndexOf("/");
+        def head = firstURL.substring(0, slashPos + 1);
+        def dotPos = firstURL.lastIndexOf(".");
+        def extension = firstURL.substring(dotPos);
+        def fileList = new ArrayList<MangaImageInfo>();
 
-        int dotPos = firstURL.lastIndexOf(".");
-
-        String extension = firstURL.substring(dotPos);
-
-        List<MangaImageInfo> fileList = new ArrayList<MangaImageInfo>();
-        for (int i = 1; i <= pages; i++) {
-            fileList.add(
-                    new MangaImageInfo(head + String.format("%d", i) + extension, extension));
-        }
+        (1..pages).each { fileList.add(new MangaImageInfo(head + String.format("%d", i) + extension, extension)) }
         return fileList;
     }
 

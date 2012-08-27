@@ -1,17 +1,10 @@
 package md.parsers;
 
 import groovy.lang.GroovyClassLoader;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.logging.*;
 import md.model.SiteParser;
 import org.codehaus.groovy.control.CompilationFailedException;
 
