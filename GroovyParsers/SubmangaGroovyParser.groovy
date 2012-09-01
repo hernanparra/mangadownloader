@@ -1,3 +1,20 @@
+/* MangaDownloader can help with Comics too
+   Copyright (C) 2012 Hernán Parra
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 package md.parsers
 
 import groovy.transform.TypeChecked
@@ -10,10 +27,10 @@ import md.documentfactorys.DocumentFactoryFromURL
  * @author Hernan
  */
 @TypeChecked
-class MangaZoneParser extends AbstractSiteParser {
-    static def DOMAIN = "http://submanga.com";
-    private def name;
-    private def url;
+class SubmangaGroovyParser extends AbstractSiteParser {
+    static String DOMAIN = "http://submanga.com";
+    String name;
+    String url;
 
     static public List<SiteParser> createParsers() {
         return createParsers(new DocumentFactoryFromURL());
@@ -21,28 +38,28 @@ class MangaZoneParser extends AbstractSiteParser {
 
     static def List<SiteParser> createParsers(DocumentFactory factory) {
         def result = new ArrayList<SiteParser>();
-        result.add(new MangaZoneParser("MangaZone Most Popular", DOMAIN + "/series", factory));
-        result.add(new MangaZoneParser("MangaZone Alphabetical", DOMAIN + "/series/n", factory));
+        result.add(new SubmangaGroovyParser("Submanga Groovy Most Popular", DOMAIN + "/series", factory));
+        result.add(new SubmangaGroovyParser("Submanga Groovy Alphabetical", DOMAIN + "/series/n", factory));
         return result;
     }
 
-    def MangaZoneParser(String name, String url) {
+    def SubmangaGroovyParser(String name, String url) {
         this.name = name;
         this.url = url;
     }
 
-    def MangaZoneParser(String name, String url, DocumentFactory builder) {
+    def SubmangaGroovyParser(String name, String url, DocumentFactory builder) {
         super(builder);
         this.name = name;
         this.url = url;
     }
 
-    def String getName() {
-        return name;
-    }
-
     def String getBaseURL() {
         return SubmangaParserFactory.DOMAIN;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getURL() {
@@ -53,7 +70,7 @@ class MangaZoneParser extends AbstractSiteParser {
         def doc = docBuilder.create(url);
         def elements = doc.select("div#b table.caps td a[href]");
         def result =  new ArrayList<MangaSeriesInfo>();
-        elements.each { result.add(new MangaSeriesInfo(it.ownText(), it.attr("href"))) }
+        elements.each { Element e -> result.add(new MangaSeriesInfo(e.ownText(), e.attr("href"))) }
         return result;
     }
 
@@ -69,7 +86,7 @@ class MangaZoneParser extends AbstractSiteParser {
         def doc = docBuilder.create(url);
         def elements = doc.select("#b table.caps td.s a[href]:not([rel=nofollow])");
         def result =  new ArrayList<MangaChaptersInfo>();
-        elements.each { e -> result.add(new MangaChaptersInfo(e.attr("href"), e.ownText(), e.child(0).ownText())) }
+        elements.each { Element e -> result.add(new MangaChaptersInfo(e.attr("href"), e.ownText(), e.child(0).ownText())) }
         return result;
     }
 
@@ -121,7 +138,7 @@ class MangaZoneParser extends AbstractSiteParser {
         def extension = firstURL.substring(dotPos);
         def fileList = new ArrayList<MangaImageInfo>();
 
-        (1..pages).each { fileList.add(new MangaImageInfo(head + String.format("%d", i) + extension, extension)) }
+        (1..pages).each { fileList.add(new MangaImageInfo(head + String.format("%d", it) + extension, extension)) }
         return fileList;
     }
 
