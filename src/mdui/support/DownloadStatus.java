@@ -15,15 +15,23 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-package md.model;
-
-import java.io.IOException;
-import org.jsoup.nodes.Document;
+package mdui.support;
 
 /**
  *
  * @author Hernan
  */
-public interface DocumentFactory {
-    Document create(String url) throws IOException;
+public enum DownloadStatus {
+    WAITING("Waiting"), DOWNLOADING("Downloading"), DOWNLOADED("Done");
+    private final String description;
+
+    DownloadStatus(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return description;
+    }
+
 }
